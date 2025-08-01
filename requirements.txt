@@ -1,0 +1,4 @@
+livekit-agents[openai,deepgram,silero]==1.2.2
+python-dotenv==1.0.1
+
+
