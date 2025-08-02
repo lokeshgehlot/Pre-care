@@ -1,7 +1,6 @@
 import logging
 from dotenv import load_dotenv
 
-
 from livekit.agents import (
     AgentSession,
     JobContext,
@@ -22,11 +21,7 @@ from precare_agent.agent import PreCareAgent
 logger = logging.getLogger("main")
 load_dotenv()
 
-
-
-
 def prewarm(proc: JobProcess):
-    # ✅ Silero VAD - tuned for responsiveness
     proc.userdata["vad"] = silero.VAD.load(
         min_speech_duration=0.05,
         min_silence_duration=0.3,
@@ -34,16 +29,25 @@ def prewarm(proc: JobProcess):
         activation_threshold=0.5
     )
 
-    # ✅ Deepgram STT
-    proc.userdata["stt"] = deepgram.STT(model="nova-3", language="multi")
+    stt = deepgram.STT(model="nova-3", language="multi")
+    proc.userdata["stt"] = stt
 
-    # ✅ Gemini LLM via Google ADK
+    # ✅ Prewarm STT using 200ms silent WAV audio
+    import numpy as np
+    import soundfile as sf
+    import io
+
+    silent_audio = np.zeros(int(0.2 * 16000), dtype=np.float32)
+    buffer = io.BytesIO()
+    sf.write(buffer, silent_audio, 16000, format='WAV')
+    buffer.seek(0)
+    stt.recognize(buffer.read())
+
     proc.userdata["llm"] = GeminiLLM(
         model="models/gemini-1.5-pro",
         temperature=0.6
     )
 
-    # ✅ Google TTS with SSML + Wavenet voice
     proc.userdata["tts"] = GoogleTTS(
         language="hi-IN",
         voice_name="hi-IN-Wavenet-A",
@@ -80,7 +84,6 @@ async def entrypoint(ctx: JobContext):
         room_input_options=RoomInputOptions(),
         room_output_options=RoomOutputOptions(transcription_enabled=True),
     )
-
 
 if __name__ == "__main__":
     cli.run_app(WorkerOptions(entrypoint_fnc=entrypoint, prewarm_fnc=prewarm))

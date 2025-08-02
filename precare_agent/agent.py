@@ -6,23 +6,21 @@ from livekit.agents import Agent
 from livekit.agents.llm import function_tool
 from livekit.agents.voice import RunContext
 
-from precare_agent.utils import detect_language  
+from precare_agent.utils import detect_language
 
 logger = logging.getLogger("precare-agent")
 
-
 def clean_text_for_tts(text: str) -> str:
-    # Remove unwanted special characters except valid SSML tags and punctuation
-    # Allow <, >, / for SSML tags; allow punctuation like . , : ; and space and alphanumerics
-    # This regex removes characters like *, #, @, $, %, ^, &, etc.
     return re.sub(r"[^a-zA-Z0-9\s.,:;<>/\-\n\r]", "", text)
 
+def split_text(text: str):
+    return re.split(r'(?<=[.?!।])\s+', text)
 
 class PreCareAgent(Agent):
     def __init__(self) -> None:
         super().__init__(
             instructions="""
-            You are devin, a kind and friendly virtual healthcare assistant.
+            You are HeyDoc, a kind and friendly virtual healthcare assistant.
             Speak in SSML format to control tone, pauses, and natural rhythm.
 
             ALWAYS wrap your responses in <speak>...</speak> tags, and use <break time='300ms'/> for pauses.
@@ -55,26 +53,52 @@ class PreCareAgent(Agent):
 
     async def on_input_start(self):
         self.last_start_time = time.time()
+        await self.session.audio.stop_playback()  # Interrupt TTS playback on new input
+
+    async def on_transcript(self, transcript):
+        if transcript.is_final:
+            logger.info(f"📝 Final transcript: {transcript.text}")
+
+            # ✅ Ask Gemini if user wants to end the conversation
+            try:
+                if await self.is_user_done(transcript.text):
+                    await self.speak_in_chunks("Okay, take care! Disconnecting now.")
+                    await self.session.disconnect()
+                    return
+            except Exception as e:
+                logger.warning(f"Gemini goodbye check failed: {e}")
+
+            await self.session.generate_reply(transcript.text)
+        else:
+            logger.debug(f"🔄 Interim transcript: {transcript.text}")
+
+    async def is_user_done(self, text: str) -> bool:
+        prompt = f"""
+        The user said: "{text}"
+
+        Is this message an attempt to politely end the conversation?
+        Reply only with 'yes' or 'no'.
+        """
+        result = await self.session.llm.prompt(prompt)
+        decision = result.text.strip().lower()
+        logger.info(f"🤖 Gemini goodbye check: {decision}")
+        return decision.startswith("yes")
 
     def format_response(self, text: str) -> str:
-        # Measure latency
         if self.last_start_time:
             elapsed = time.time() - self.last_start_time
             logger.info(f"⏱️ Time taken for response: {elapsed:.2f} seconds")
             self.last_start_time = None
 
-        # Clean text to avoid special characters being read literally
         clean_text = clean_text_for_tts(text)
 
-        # Ensure response is wrapped in <speak>...</speak>
         if not clean_text.strip().startswith("<speak>"):
             clean_text = f"<speak>{clean_text}</speak>"
 
-        # Detect response language
         lang = detect_language(clean_text)
         logger.info(f"🌐 Detected language: {lang}")
 
-        # Dynamically switch TTS voice
+        # Dynamically switch voice based on language
         if lang == "en":
             self.session.set_tts_config(
                 language="en-IN",
@@ -91,6 +115,14 @@ class PreCareAgent(Agent):
             )
 
         return clean_text
+
+    async def speak_in_chunks(self, full_text: str):
+        chunks = split_text(full_text)
+        for chunk in chunks:
+            if not chunk.strip():
+                continue
+            ssml = self.format_response(chunk)
+            await self.session.speak(ssml)
 
     @function_tool
     async def check_symptom(self, context: RunContext, symptom: str):
