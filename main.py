@@ -12,7 +12,7 @@ from livekit.agents import (
     metrics,
 )
 from livekit.plugins import silero, deepgram
-from livekit.plugins.google.llm import LLM as GeminiLLM
+from livekit.plugins.google.llm import LLM as GoogleLLM # Import Gemini LLM
 from livekit.plugins.azure import TTS as AzureTTS
 from livekit.agents.voice import MetricsCollectedEvent
 
@@ -42,12 +42,13 @@ def prewarm(proc: JobProcess):
     buffer.seek(0)
     stt.recognize(buffer.read())
 
-    proc.userdata["llm"] = GeminiLLM(
-        model="models/gemini-1.5-flash",
+    # Use Google's LLM instead of OpenAI's
+    proc.userdata["llm"] = GoogleLLM(
+        model="gemini-2.0-flash-exp", # Specify the Gemini model
         temperature=0.6,
     )
 
-    proc.userdata["tts"] = AzureTTS()  # ✅ Plain text input (no SSML)
+    proc.userdata["tts"] = AzureTTS()
 
 async def entrypoint(ctx: JobContext):
     ctx.log_context_fields = {"room": ctx.room.name}

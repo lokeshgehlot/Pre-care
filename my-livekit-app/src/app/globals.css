@@ -1,0 +1,128 @@
+:root {
+  --bg-color: #1a202c;
+  --card-bg-color: #2d3748;
+  --text-color: #f7fafc;
+  --subtle-text-color: #a0aec0;
+  --primary-color: #4299e1;
+  --primary-hover-color: #3182ce;
+  --connect-color: #48bb78;
+  --connect-hover-color: #38a169;
+  --error-color: #f56565;
+  --font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --mono-font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 1rem;
+}
+
+.header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--primary-color);
+}
+
+.subtitle {
+  font-size: 1.125rem;
+  color: var(--subtle-text-color);
+  margin-top: 0.5rem;
+}
+
+.main-content {
+  width: 100%;
+  max-width: 42rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: var(--card-bg-color);
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  text-align: center;
+}
+
+.card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.card-text {
+  color: var(--subtle-text-color);
+  margin-bottom: 1.5rem;
+}
+
+.error-box {
+  background-color: var(--card-bg-color);
+  border: 1px solid var(--error-color);
+  color: var(--error-color);
+  padding: 2rem;
+  border-radius: 0.75rem;
+  text-align: center;
+}
+
+.button {
+  width: 100%;
+  padding: 1rem 2rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.primary-button {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+}
+
+.primary-button:hover {
+  background-color: var(--primary-hover-color);
+}
+
+.connect-button {
+  background-color: var(--connect-color);
+  color: var(--text-color);
+}
+
+.connect-button:hover:not(:disabled) {
+  background-color: var(--connect-hover-color);
+}
+
+.connect-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.footer {
+  margin-top: 2rem;
+  text-align: center;
+  color: var(--subtle-text-color);
+}
+
+.mono {
+  font-family: var(--mono-font-family);
+  color: var(--text-color);
+}
