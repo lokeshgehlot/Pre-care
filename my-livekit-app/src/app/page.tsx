@@ -17,7 +17,7 @@ function MyLiveKitApp() {
   const [participantName, setParticipantName] = useState<string | null>(null);
 
   // The room name will be hardcoded for this example
-  const roomName = "my-awesome-room";
+  const roomName = "Medical Assistance";
 
   // Use useEffect to generate the participant name only on the client side
   useEffect(() => {
@@ -43,7 +43,7 @@ function MyLiveKitApp() {
       setUserToken(userData.token);
 
       // Fetch the token for the agent, which triggers the agent job
-      const agentResponse = await fetch(`/api/token?room=${roomName}&username=precare-agent&isAgent=true`);
+      const agentResponse = await fetch(`/api/token?room=${roomName}&username=HeyDocAI&isAgent=true`);
       if (!agentResponse.ok) {
         throw new Error("Failed to fetch agent token from server.");
       }

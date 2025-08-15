@@ -1,0 +1,7 @@
+{
+    "python.analysis.extraPaths": [
+        "./precare_",
+        "./precare_",
+        "./precare_agent"
+    ]
+}

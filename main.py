@@ -1,5 +1,7 @@
 import logging
 from dotenv import load_dotenv
+import time
+import re
 
 from livekit.agents import (
     AgentSession,
@@ -32,7 +34,6 @@ def prewarm(proc: JobProcess):
     stt = deepgram.STT(model="nova-3", language="multi")
     proc.userdata["stt"] = stt
 
-    # Prewarm Deepgram STT with silent audio
     import numpy as np
     import soundfile as sf
     import io
@@ -42,9 +43,8 @@ def prewarm(proc: JobProcess):
     buffer.seek(0)
     stt.recognize(buffer.read())
 
-    # Use Google's LLM instead of OpenAI's
     proc.userdata["llm"] = GoogleLLM(
-        model="gemini-2.0-flash-exp", # Specify the Gemini model
+        model="gemini-2.0-flash-exp",
         temperature=0.6,
     )
 
@@ -52,6 +52,9 @@ def prewarm(proc: JobProcess):
 
 async def entrypoint(ctx: JobContext):
     ctx.log_context_fields = {"room": ctx.room.name}
+
+    # Initialize the PreCareAgent with the desired voice and language
+    my_agent = PreCareAgent(voice="en-IN-NeerjaNeural", language="en-IN")
 
     session = AgentSession(
         vad=ctx.proc.userdata["vad"],
@@ -73,7 +76,7 @@ async def entrypoint(ctx: JobContext):
     ctx.add_shutdown_callback(log_usage)
 
     await session.start(
-        agent=PreCareAgent(),
+        agent=my_agent,
         room=ctx.room,
         room_input_options=RoomInputOptions(),
         room_output_options=RoomOutputOptions(transcription_enabled=True),

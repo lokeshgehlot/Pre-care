@@ -1,0 +1,39 @@
+Metadata-Version: 2.4
+Name: livekit-plugins-azure
+Version: 1.2.2
+Summary: Agent Framework plugin for services from Azure
+Project-URL: Documentation, https://docs.livekit.io
+Project-URL: Website, https://livekit.io/
+Project-URL: Source, https://github.com/livekit/agents
+Author-email: LiveKit <hello@livekit.io>
+License-Expression: Apache-2.0
+Keywords: audio,livekit,realtime,video,webrtc
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Topic :: Multimedia :: Sound/Audio
+Classifier: Topic :: Multimedia :: Video
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Python: >=3.9.0
+Requires-Dist: azure-cognitiveservices-speech>=1.43.0
+Requires-Dist: livekit-agents>=1.2.2
+Description-Content-Type: text/markdown
+
+# Azure plugin for LiveKit Agents
+
+Support for Azure AI including Azure Speech. For Azure OpenAI, see the [OpenAI plugin](https://github.com/livekit/agents/tree/main/livekit-plugins/livekit-plugins-openai).
+
+See [https://docs.livekit.io/agents/integrations/azure/](https://docs.livekit.io/agents/integrations/azure/) for more information.
+
+## Installation
+
+```bash
+pip install livekit-plugins-azure
+```
+
+## Pre-requisites
+
+You'll need to specify an Azure Speech Key and a Deployment Region. They can be set as environment variables: `AZURE_SPEECH_KEY` and `AZURE_SPEECH_REGION`, respectively.

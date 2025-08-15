@@ -3,7 +3,6 @@ import time
 import re
 
 from livekit.agents import Agent
-from livekit.agents.llm import function_tool
 from livekit.agents.voice import RunContext
 
 from langdetect import detect
@@ -26,6 +25,9 @@ def clean_text_for_tts(text: str) -> str:
     
     # Remove any character that is not a letter, number, or standard punctuation
     text = re.sub(r"[^a-zA-Z0-9\s.,?!।]", "", text)
+
+    # Remove specific words that might be spoken instead of symbols
+    text = re.sub(r'\b(asterisk|bullet|point)\b', '', text, flags=re.IGNORECASE)
     
     # Remove excessive whitespace
     text = " ".join(text.split())
@@ -35,6 +37,7 @@ def clean_text_for_tts(text: str) -> str:
 def split_text(text: str):
     # This function is still useful for splitting sentences
     return re.split(r'(?<=[.?!।])\s+', text)
+
 def detect_language(text: str) -> str:
     try:
         lang = detect(text)
@@ -43,7 +46,7 @@ def detect_language(text: str) -> str:
         return "en"
 
 class PreCareAgent(Agent):
-    def __init__(self) -> None:
+    def __init__(self, voice: str = "en-IN-NeerjaNeural", language: str = "en-IN") -> None:
         super().__init__(
             instructions="""
 You are WellnessGPT Symptom Triage Assistant, an empathetic, medically-aware virtual nurse trained to listen carefully to a patient’s health concerns.
@@ -106,9 +109,15 @@ Final empathetic closure:
 """
         )
         self.last_start_time = None
+        self.voice = voice
+        self.language = language
 
     async def on_enter(self):
-        self.session.generate_reply()
+        # This message will be spoken immediately as the agent enters the room.
+        welcome_message = "Hello, I am HeyDoc, How are you today?"
+        
+        # Use the speak_in_chunks method to speak the welcome message
+        await self.speak_in_chunks(welcome_message)
 
     async def on_input_start(self):
         self.last_start_time = time.time()
@@ -149,9 +158,9 @@ Reply only with 'yes' or 'no'.
 
         clean = clean_text_for_tts(text)
 
-        # Use only hi-IN-AartiNeural
-        voice = "hi-IN-AartiNeural"
-        language = "hi-IN"
+        # Use the voice and language set in the constructor
+        voice = self.voice
+        language = self.language
 
         # Set TTS config for session
         self.session.set_tts_config(
